@@ -12,14 +12,15 @@ import sys
 import tempfile
 from pathlib import Path
 
+# pylint: disable=R1710 # inconsistent-return-statements
+
 
 def run_cmd(cmd, capture=False):
     try:
         if capture:
             return subprocess.check_output(cmd, text=True).strip()
-        else:
-            subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
         print(f"❌ Command failed: {' '.join(cmd)}")
         sys.exit(1)
 
@@ -36,7 +37,7 @@ def list_outdated():
 
 def load_requirements(req_path):
     deps = {}
-    with open(req_path) as f:
+    with open(req_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
@@ -62,7 +63,7 @@ def main():
     outdated = list_outdated()
     direct = load_requirements(req_path)
 
-    candidates = {pkg: outdated[pkg] for pkg in direct if pkg in outdated}
+    candidates = {pkg: outdated[pkg] for pkg in outdated if pkg in direct}
 
     if not candidates:
         print("✅ No direct dependencies are outdated.\n")
@@ -84,7 +85,7 @@ def main():
         print("❌ Upgrade cancelled.\n")
         return
 
-    with tempfile.NamedTemporaryFile("w", delete=False) as tmp:
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8") as tmp:
         for pkg in candidates:
             tmp.write(pkg + "\n")
         upgrade_file = tmp.name
@@ -96,12 +97,12 @@ def main():
     freeze_output = run_cmd([sys.executable, "-m", "pip", "freeze"], capture=True)
     frozen = {line.split("==")[0].lower(): line for line in freeze_output.splitlines()}
 
-    with open(req_path, "w") as f:
-        for pkg in direct:
-            if pkg in frozen:
-                f.write(f"{frozen[pkg]}\n")
+    with open(req_path, "w", encoding="utf-8") as f:
+        for pkg_name, pkg_line in direct.items():
+            if pkg_name in frozen:
+                f.write(f"{frozen[pkg_name]}\n")
             else:
-                f.write(direct[pkg] + "\n")
+                f.write(pkg_line + "\n")
 
     print(f"✅ Requirements updated: {req_path}\n")
 
