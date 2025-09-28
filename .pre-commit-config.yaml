@@ -1,0 +1,10 @@
+repos:
+- repo: local
+  hooks:
+  - id: pylint
+    name: pylint
+    entry: ../../py312venv/bin/pylint  #  Adjust according to local env
+    language: system
+    types: [python]
+    require_serial: true
+    args: [--rc=pylintrc]
