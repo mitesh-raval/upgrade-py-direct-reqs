@@ -8,7 +8,7 @@ version = "0.1.1"
 description = "Upgrade only direct dependencies in requirements.txt or pyproject.toml"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "MIT" }
+license = "MIT"
 license-files = ["LICEN[CS]E*"]
 authors = [
   { name = "Miteshkumar Raval", email = "mraval@nasagram.com" }
