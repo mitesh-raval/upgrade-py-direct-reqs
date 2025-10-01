@@ -4,7 +4,7 @@
 
 A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` (or `pyproject.toml` in future versions), while keeping your pinned versions up to date.
 
-Developed by Miteshkumar N Raval with guidance and scripting assistance from OpenAI ChatGPT.
+Developed by Miteshkumar N Raval  with guidance and scripting assistance from OpenAI ChatGPT..
 
 ---
 
@@ -14,20 +14,15 @@ Developed by Miteshkumar N Raval with guidance and scripting assistance from Ope
 - Prompts for confirmation before upgrading.
 - Updates `requirements.txt` with new pinned versions.
 - Cross-platform: works on Linux, macOS, and Windows.
-- CLI installable via [pipx](https://pypa.github.io/pipx/).
+- CLI installable via pip in a virtual environment or globally.
 
 ---
 
 ## Installation
 
 ```bash
-# Recommended: install globally using pipx
-pipx install upgrade-py-direct-reqs
-```
-
-Or via pip in a venv:
-
-```bash
+# Recommended: install inside your existing project virtual environment
+source myenv/bin/activate  # or myenv\Scripts\activate on Windows
 pip install upgrade-py-direct-reqs
 ```
 
@@ -40,8 +35,8 @@ pip install upgrade-py-direct-reqs
 upgrade-py-direct-reqs path/to/requirements.txt
 ```
 
-- The CLI will list outdated direct dependencies.
-- You can review versions and confirm before upgrading.
+- The CLI lists outdated direct dependencies.
+- Review versions and confirm before upgrading.
 - After upgrade, the `requirements.txt` file is updated with pinned versions.
 
 ---
