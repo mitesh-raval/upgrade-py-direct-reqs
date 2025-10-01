@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "upgrade-py-direct-reqs"
-version = "0.1.2"
+version = "0.1.3"
 description = "Upgrade only direct dependencies in requirements.txt or pyproject.toml"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,7 +32,7 @@ Repository = "https://github.com/mitesh-raval/upgrade-py-direct-reqs"
 Issues = "https://github.com/mitesh-raval/upgrade-py-direct-reqs/issues"
 
 [project.scripts]
-upgrade-py-direct-reqs = "upgrade_py_direct_reqs.cli:main"
+upgrade-py-direct-reqs = "upgrade-py-direct-reqs.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

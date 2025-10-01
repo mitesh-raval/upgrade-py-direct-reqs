@@ -5,11 +5,12 @@
 
 set -uo pipefail   # do not exit on error automatically
 
+echo "🧹 Cleaning build artifacts..."
+rm -rf build/ dist/ *.egg-info/ || echo "⚠️ Nothing to clean"
+echo "✅ Clean complete"
+
 # --- Handle 'clean' target ---
 if [[ ${1-} == "clean" ]]; then
-    echo "🧹 Cleaning build artifacts..."
-    rm -rf build/ dist/ *.egg-info/ || echo "⚠️ Nothing to clean"
-    echo "✅ Clean complete"
     exit 0
 fi
 
