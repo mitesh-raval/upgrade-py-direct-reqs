@@ -1,4 +1,4 @@
-src/upgrade-py-direct-reqs/requirements.txt
+src/updr/requirements.txt
 # Python build artifacts
 __pycache__/
 *.py[cod]
