@@ -32,7 +32,7 @@ Repository = "https://github.com/mitesh-raval/upgrade-py-direct-reqs"
 Issues = "https://github.com/mitesh-raval/upgrade-py-direct-reqs/issues"
 
 [project.scripts]
-upgrade-py-direct-reqs = "upgrade-py-direct-reqs.cli:main"
+upgrade-py-direct-reqs = upgrade-py-direct-reqs.cli:main
 
 [tool.setuptools.packages.find]
 where = ["src"]
