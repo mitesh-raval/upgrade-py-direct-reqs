@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,13 +9,18 @@ description = "Upgrade only direct dependencies in requirements.txt or pyproject
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
+license-files = ["LICEN[CS]E*"]
 authors = [
   { name = "Miteshkumar Raval", email = "mraval@nasagram.com" }
 ]
+maintainers = [
+  { name = "Miteshkumar Raval", email = "mraval@nasagram.com" }
+]
+keywords = ["dependencies","upgrades","upgrade packages","requirements upgrade"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent"
+  "Operating System :: OS Independent",
+  "Development Status :: 4 - Beta"
 ]
 dependencies = [
   "pip>=21.0"

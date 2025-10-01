@@ -1,1 +1,7 @@
 src/upgrade-py-direct-reqs/requirements.txt
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
