@@ -17,7 +17,7 @@ import toml
 
 
 class CommandError(Exception):
-    """Custom exception for failed subprocess commands."""
+    """Custom exception for failed subprocess commands.""" 
 
 
 def run_cmd(cmd, capture=False):

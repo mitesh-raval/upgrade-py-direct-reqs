@@ -6,3 +6,4 @@ __pycache__/
 dist/
 build/
 src/updr/pyproject.toml
+src/updr/reqs.txt
