@@ -81,6 +81,20 @@ flask==3.0.3
 
 ---
 
+## Test instructions 
+
+### To run CLI tests with pytest:
+``` 
+ 1. Ensure pytest is installed in your environment: pip install pytest
+ 2. Run tests from the project root:
+       pytest tests/test_cli.py
+ 3. Tests cover:
+       - requirements.txt only
+       - pyproject.toml only
+       - conflicting dependencies in both files
+       - empty requirements.txt
+```
+
 ## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.

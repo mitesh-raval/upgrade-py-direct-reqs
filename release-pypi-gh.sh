@@ -6,7 +6,7 @@
 set -uo pipefail   # do not exit on error automatically
 
 echo "🧹 Cleaning build artifacts..."
-rm -rf build/ dist/ *.egg-info/ || echo "⚠️ Nothing to clean"
+rm -rf build/ dist/ *.egg-info/ src/*.egg-info || echo "⚠️ Nothing to clean"
 echo "✅ Clean complete"
 
 # --- Handle 'clean' target ---
