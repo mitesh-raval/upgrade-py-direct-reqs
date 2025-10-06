@@ -4,8 +4,7 @@
 
 A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` (or `pyproject.toml` in future versions), while keeping your pinned versions up to date.
 
-Developed by Miteshkumar N Raval  with guidance and scripting assistance from OpenAI ChatGPT..
-
+Developed by Miteshkumar N Raval  with guidance and scripting assistance from coding agents.
 ---
 
 ## Features
