@@ -69,6 +69,14 @@ def _setup_empty_file_impl():
         yield path
 
 
+@pytest.fixture(name="setup_invalid_toml_file_name")
+def _setup_invalid_toml_file_name_impl():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "pyproj.toml"
+        path.write_text("")
+        yield path
+
+
 def test_requirements_only(setup_req_file):
     out = run_cli(setup_req_file)
     assert (
@@ -99,4 +107,11 @@ def test_empty_requirements(setup_empty_file):
     assert (
         "❌ No direct dependencies found" in out
         or "✅ All direct dependencies are up to date" in out
+    )
+
+
+def test_invalid_toml_file_name(setup_invalid_toml_file_name):
+    out = run_cli(setup_invalid_toml_file_name)
+    assert (
+        "❌ Invalid toml file name" in out and "File name must be pyproject.toml" in out
     )

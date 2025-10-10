@@ -4,7 +4,7 @@
 
 A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` or `pyproject.toml`, while keeping your pinned versions up to date.
 
-Developed by Miteshkumar N Raval  with guidance and scripting assistance from coding agents.
+Developed by Miteshkumar N Raval with guidance and scripting assistance from coding agents.
 ---
 
 ## Features
@@ -96,6 +96,7 @@ flask==3.0.3
        - pyproject.toml only
        - conflicting dependencies in both files
        - empty requirements.txt
+       - invalid toml file name (refer PEP 621 for more details)
 ```
 
 ## License
