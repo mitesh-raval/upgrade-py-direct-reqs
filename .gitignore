@@ -7,3 +7,4 @@ dist/
 build/
 src/updr/pyproject.toml
 src/updr/reqs.txt
+src/updr/pyproj_test.toml

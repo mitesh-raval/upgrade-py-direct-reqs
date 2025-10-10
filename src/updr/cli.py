@@ -17,7 +17,7 @@ import toml
 
 
 class CommandError(Exception):
-    """Custom exception for failed subprocess commands.""" 
+    """Custom exception for failed subprocess commands."""
 
 
 def run_cmd(cmd, capture=False):
@@ -77,11 +77,15 @@ def check_conflicting_sources(req_file_path, toml_path):
         toml_data = toml.loads(toml_path.read_text(encoding="utf-8"))
         if "project" in toml_data and "dependencies" in toml_data["project"]:
             print("⚠️  Multiple dependency sources detected:")
-            print(f"   - {req_file_path.name} and pyproject.toml both declare dependencies.")
+            print(
+                f"   - {req_file_path.name} and pyproject.toml both declare dependencies."
+            )
             print("   - Only one source can be upgraded at a time.")
             print("   - PEP 621 recommends [project.dependencies] in pyproject.toml:")
             print("     https://peps.python.org/pep-0621/")
-            print("❌ Resolve the conflict by using only one file for direct dependencies.")
+            print(
+                "❌ Resolve the conflict by using only one file for direct dependencies."
+            )
             return True
     return False
 
@@ -91,7 +95,7 @@ def _get_file_dependencies(file_path):
     deps = {}
     toml_data = None
 
-    if file_path.name == "pyproject.toml":
+    if file_path.name.lower() == "pyproject.toml":
         deps, toml_data = load_toml_deps(file_path)
         if deps is None:
             return None, None
@@ -138,11 +142,14 @@ def _confirm_and_upgrade(candidates):
             upgrade_file = tmp.name
 
         print(f"⬆️  Upgrading {len(candidates)} packages...")
-        run_cmd([sys.executable, "-m", "pip", "install", "--upgrade", "-r", upgrade_file])
+        run_cmd(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "-r", upgrade_file]
+        )
         return True
     finally:
         if upgrade_file and os.path.exists(upgrade_file):
             os.remove(upgrade_file)
+
 
 def _repin_dependencies(file_path, deps, toml_data, candidates):
     """Updates the dependency file with newly pinned versions."""
@@ -179,7 +186,16 @@ def main():
             return
         if file_path.is_dir():
             print(f"❌ Path is a directory, not a file: {file_path}")
-            print("   Please provide a path to a dependency file like 'requirements.txt'.")
+            print(
+                "   Please provide a path to a dependency file like 'requirements.txt'."
+            )
+            return
+
+        fn = file_path.name.lower().split(".")
+        if fn[1] == "toml" and fn[0] != "pyproject":
+            print(
+                f"❌ Invalid toml file name : {file_path}. File name must be pyproject.toml [PEP 621] \n"
+            )
             return
 
         deps, toml_data = _get_file_dependencies(file_path)
