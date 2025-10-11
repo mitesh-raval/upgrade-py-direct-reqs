@@ -157,18 +157,18 @@ def _repin_dependencies(file_path, deps, toml_data, candidates):
     freeze_output = run_cmd([sys.executable, "-m", "pip", "freeze"], capture=True)
     frozen = {line.split("==")[0].lower(): line for line in freeze_output.splitlines()}
 
-    if file_path.name == "requirements.txt":
-        with open(file_path, "w", encoding="utf-8") as f:
-            for pkg_name, pkg_line in deps.items():
-                f.write(f"{frozen.get(pkg_name, pkg_line)}\n")
-        print(f"✅ Requirements updated: {file_path}")
-    else:  # pyproject.toml
+    if file_path.name.lower() == "pyproject.toml":
         toml_data["project"]["dependencies"] = [
             frozen[pkg] if pkg in candidates else dep for pkg, dep in deps.items()
         ]
         with open(file_path, "w", encoding="utf-8") as f:
             toml.dump(toml_data, f)
         print(f"✅ pyproject.toml [project.dependencies] updated: {file_path}")
+    else:
+        with open(file_path, "w", encoding="utf-8") as f:
+            for pkg_name, pkg_line in deps.items():
+                f.write(f"{frozen.get(pkg_name, pkg_line)}\n")
+        print(f"✅ Requirements updated: {file_path}")
 
 
 def main():
