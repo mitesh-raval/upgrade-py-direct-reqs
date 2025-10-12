@@ -8,13 +8,13 @@ class Symbols:
 
     def __init__(self, no_color: bool = False) -> None:
         if no_color:
-            self.ok = "OK"
-            self.warn = "WARN"
-            self.err = "ERR"
-            self.upg = "UPG"
-            self.pkg = "PKG"
-            self.info = "INFO"
-            self.pin = "PIN"
+            self.ok = "[OK] "
+            self.warn = "[WARN] "
+            self.err = "[ERR] "
+            self.upg = "[UPG] "
+            self.pkg = "[PKG] "
+            self.info = "[INFO] "
+            self.pin = "[PIN] "
         else:
             self.ok = "✅"
             self.warn = "⚠️"
