@@ -80,38 +80,37 @@ def _setup_invalid_toml_file_name_impl():
 def test_requirements_only(setup_req_file):
     out = run_cli(setup_req_file)
     assert (
-        "📦 Outdated direct dependencies" in out
-        or "✅ All direct dependencies are up to date" in out
-        or "❌ No direct dependencies found" in out
+        "Outdated direct dependencies" in out
+        or "All direct dependencies are up to date" in out
+        or "No direct dependencies found" in out
     )
 
 
 def test_toml_only(setup_toml_file):
     out = run_cli(setup_toml_file)
-    assert "📄 Using pyproject.toml" in out
+    assert "Using pyproject.toml" in out
     assert (
-        "📦 Outdated direct dependencies" in out
-        or "✅ All direct dependencies are up to date" in out
-        or "❌ No direct dependencies found" in out
+        "Outdated direct dependencies" in out
+        or "All direct dependencies are up to date" in out
+        or "No direct dependencies found" in out
     )
 
 
 def test_conflicting_files(setup_conflicting_files):
     req_file, _ = setup_conflicting_files
     out = run_cli(req_file)
-    assert "⚠️  Multiple dependency sources detected" in out
+    assert "Multiple dependency sources detected" in out
 
 
 def test_empty_requirements(setup_empty_file):
     out = run_cli(setup_empty_file)
     assert (
-        "❌ No direct dependencies found" in out
-        or "✅ All direct dependencies are up to date" in out
+        "No direct dependencies found" in out
+        or "All direct dependencies are up to date" in out
     )
 
 
 def test_invalid_toml_file_name(setup_invalid_toml_file_name):
     out = run_cli(setup_invalid_toml_file_name)
-    assert (
-        "❌ Invalid toml file name" in out and "File name must be pyproject.toml" in out
-    )
+    assert "Invalid toml file name" in out
+    assert "File name must be pyproject.toml" in out
