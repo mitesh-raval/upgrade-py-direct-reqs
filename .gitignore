@@ -1,4 +1,3 @@
-src/updr/requirements.txt
 # Python build artifacts
 __pycache__/
 *.py[cod]

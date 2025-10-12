@@ -2,16 +2,16 @@
 
 **Upgrade only direct dependencies listed in `requirements.txt` safely.**
 
-A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` (or `pyproject.toml` in future versions), while keeping your pinned versions up to date.
+A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` or `pyproject.toml`, while keeping your pinned versions up to date.
 
-Developed by Miteshkumar N Raval  with guidance and scripting assistance from OpenAI ChatGPT..
-
+Developed by Miteshkumar N Raval with guidance and scripting assistance from coding agents.
 ---
 
 ## Features
 
 - Lists outdated direct dependencies.
 - Prompts for confirmation before upgrading.
+- Supports both `requirements.txt` and `pyproject.toml` (with `[project.dependencies]`).
 - Updates `requirements.txt` with new pinned versions.
 - Cross-platform: works on Linux, macOS, and Windows.
 - CLI installable via pip in a virtual environment or globally.
@@ -32,7 +32,10 @@ pip install upgrade-py-direct-reqs
 
 ```bash
 # Explicitly specify your requirements file
-upgrade-py-direct-reqs path/to/requirements.txt
+upgrade-py-direct-reqs requirements.txt
+
+# Or specify your pyproject.toml
+upgrade-py-direct-reqs pyproject.toml
 ```
 
 - The CLI lists outdated direct dependencies.
@@ -93,6 +96,7 @@ flask==3.0.3
        - pyproject.toml only
        - conflicting dependencies in both files
        - empty requirements.txt
+       - invalid toml file name (refer PEP 621 for more details)
 ```
 
 ## License
