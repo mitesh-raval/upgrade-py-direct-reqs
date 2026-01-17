@@ -122,6 +122,7 @@ def _get_upgrade_candidates(
     deps: Dict[str, str], sym: Symbols
 ) -> Optional[Dict[str, Tuple[str, str]]]:
     """Identifies which direct dependencies are outdated."""
+    print(f"{sym.INFO}  Finding outdated deps... [this may take some time]")
     outdated = list_outdated()
     candidates = {pkg: outdated[pkg] for pkg in outdated if pkg in deps}
 
@@ -212,6 +213,7 @@ def _prepare_file(
         )
         return None, None
 
+    print(f"{sym.INFO}  Analyzing deps for {file_path}... ")
     deps, toml_data = _get_file_dependencies(file_path, sym)
     if not deps:
         print(f"{sym.ERR} No direct dependencies found to process.")
