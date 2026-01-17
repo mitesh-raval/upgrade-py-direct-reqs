@@ -20,11 +20,15 @@ read -p "Enter new version (e.g., 0.1.1): " new_version
 # --- Update version in pyproject.toml ---
 sed -i -E "s/^version = \".*\"/version = \"$new_version\"/" pyproject.toml || echo "⚠️ Failed to update version"
 
-
 echo "📄 Updated version to $new_version in pyproject.toml"
 
-# --- Skip PR creation (optional) ---
-echo "ℹ️ Skipping automatic PR creation step"
+# --- Commit version bump ---
+git add pyproject.toml
+git commit -m "chore: release v$new_version" || echo "⚠️ Nothing to commit"
+
+# --- Create or update tag ---
+git tag -f "v$new_version"
+git push origin "v$new_version" --force
 
 # --- Create GitHub release (handles existing tag) ---
 if gh release view "v$new_version" >/dev/null 2>&1; then
