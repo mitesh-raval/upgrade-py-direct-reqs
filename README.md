@@ -4,7 +4,7 @@
 
 A Python CLI tool that lets you review and upgrade **only direct dependencies** in a project’s `requirements.txt` or `pyproject.toml`, while keeping your pinned versions up to date.
 
-Developed by Miteshkumar N Raval with guidance and scripting assistance from coding agents.
+Developed by coding agents with guidance from Miteshkumar N Raval.
 ---
 
 ## Features
@@ -98,7 +98,7 @@ flask==3.0.3
  1. pip install .[dev]  (to install dev deps listed in pyproject.toml)
  2. Ensure pytest is installed in your environment: pip install pytest
  3. Run tests from the project root:
-       pytest tests/test_cli.py
+       pytest tests/tests_cli.py
  4. Tests cover:
        - requirements.txt only
        - pyproject.toml only
