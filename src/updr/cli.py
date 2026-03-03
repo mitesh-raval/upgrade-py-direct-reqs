@@ -8,7 +8,6 @@ Upgrade only direct dependencies listed in requirements.txt or pyproject.toml sa
 import argparse
 import json
 import subprocess
-import sys
 import os
 import tempfile
 import re
@@ -34,9 +33,26 @@ def run_cmd(cmd: list[str], capture: bool = False) -> str:
         raise CommandError(f"Command not found: {cmd[0]}") from exc
 
 
-def list_outdated() -> Dict[str, Tuple[str, str]]:
+def get_venv_python(sym: Symbols) -> Optional[str]:
+    """Ensure a virtual environment is activated and return python path."""
+    venv = os.environ.get("VIRTUAL_ENV")
+    if not venv:
+        print(f"{sym.ERR} No virtual environment detected.")
+        print("   Please activate your project venv before running updr.")
+        return None
+
+    python_path = Path(venv) / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    if not python_path.exists():
+        print(f"{sym.ERR} Could not locate python in activated virtual environment.")
+        print(f"   Expected path: {python_path}")
+        return None
+
+    return str(python_path)
+
+
+def list_outdated(python_cmd: str) -> Dict[str, Tuple[str, str]]:
     """Lists outdated pip packages using 'pip list'."""
-    cmd = [sys.executable, "-m", "pip", "list", "-o", "--format=json"]
+    cmd = [python_cmd, "-m", "pip", "list", "-o", "--format=json"]
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     # An empty JSON array is valid if no packages are outdated.
     # It will result in an empty dictionary, which is the correct behavior.
@@ -58,11 +74,36 @@ def load_requirements(req_path: Path) -> Dict[str, str]:
     return deps
 
 
-def load_toml_deps(toml_path: Path) -> Tuple[Optional[Dict[str, str]], Optional[dict]]:
+def check_not_installed(deps: Dict[str, str], sym: Symbols, python_cmd: str) -> bool:
+    """Warn if declared direct dependencies are not installed."""
+    missing = []
+    for pkg in deps:
+        result = subprocess.run(
+            [python_cmd, "-m", "pip", "show", pkg],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            missing.append(pkg)
+
+    if missing:
+        print(f"{sym.WARN} The following direct dependencies are NOT installed:")
+        for pkg in missing:
+            print(f"  - {pkg}")
+        print("   Install them before attempting upgrades.")
+        return False
+
+    return True
+
+
+def load_toml_deps(
+    toml_path: Path, sym: Symbols
+) -> Tuple[Optional[Dict[str, str]], Optional[dict]]:
     """Loads dependencies from a pyproject.toml file."""
     toml_data: dict = toml.loads(toml_path.read_text(encoding="utf-8"))
     if "project" not in toml_data or "dependencies" not in toml_data["project"]:
-        print("{sym.WARN}  No [project.dependencies] found in pyproject.toml.")
+        print(f"{sym.WARN}  No [project.dependencies] found in pyproject.toml.")
         print(
             "   PEP 621 recommends using [project.dependencies]: https://peps.python.org/pep-0621/"
         )
@@ -105,7 +146,7 @@ def _get_file_dependencies(
     toml_data: Optional[dict] = None
 
     if file_path.name.lower() == "pyproject.toml":
-        deps, toml_data = load_toml_deps(file_path)
+        deps, toml_data = load_toml_deps(file_path, sym)
         if deps is None:
             return None, None
     else:
@@ -119,11 +160,11 @@ def _get_file_dependencies(
 
 
 def _get_upgrade_candidates(
-    deps: Dict[str, str], sym: Symbols
+    deps: Dict[str, str], sym: Symbols, python_cmd: str
 ) -> Optional[Dict[str, Tuple[str, str]]]:
     """Identifies which direct dependencies are outdated."""
     print(f"{sym.INFO}  Finding outdated deps... [this may take some time]")
-    outdated = list_outdated()
+    outdated = list_outdated(python_cmd)
     candidates = {pkg: outdated[pkg] for pkg in outdated if pkg in deps}
 
     if not candidates:
@@ -136,7 +177,9 @@ def _get_upgrade_candidates(
     return candidates
 
 
-def _confirm_and_upgrade(candidates: Dict[str, Tuple[str, str]], sym: Symbols) -> bool:
+def _confirm_and_upgrade(
+    candidates: Dict[str, Tuple[str, str]], sym: Symbols, python_cmd: str
+) -> bool:
     """Asks for user confirmation and upgrades packages if approved."""
     print(
         f"\n{sym.WARN} Please review package revisions listed above before upgrading."
@@ -158,9 +201,7 @@ def _confirm_and_upgrade(candidates: Dict[str, Tuple[str, str]], sym: Symbols) -
             upgrade_file = tmp.name
 
         print(f"{sym.UPG} Upgrading {len(candidates)} packages...")
-        run_cmd(
-            [sys.executable, "-m", "pip", "install", "--upgrade", "-r", upgrade_file]
-        )
+        run_cmd([python_cmd, "-m", "pip", "install", "--upgrade", "-r", upgrade_file])
         return True
     finally:
         if upgrade_file and os.path.exists(upgrade_file):
@@ -173,10 +214,11 @@ def _repin_dependencies(
     toml_data: Optional[dict],
     candidates: Dict[str, Tuple[str, str]],
     sym: Symbols,
+    python_cmd: str,
 ) -> None:
     """Updates the dependency file with newly pinned versions."""
     print(f"{sym.PIN} Repinning direct dependencies...")
-    freeze_output = run_cmd([sys.executable, "-m", "pip", "freeze"], capture=True)
+    freeze_output = run_cmd([python_cmd, "-m", "pip", "freeze"], capture=True)
     frozen = {line.split("==")[0].lower(): line for line in freeze_output.splitlines()}
 
     if file_path.name.lower() == "pyproject.toml":
@@ -235,6 +277,9 @@ def main() -> None:
     )
     args = parser.parse_args()
     sym = Symbols(args.no_color)
+    python_cmd = get_venv_python(sym)
+    if not python_cmd:
+        return
 
     try:
         file_path = Path(args.file).resolve()
@@ -242,15 +287,18 @@ def main() -> None:
         if not deps:
             return
 
-        candidates = _get_upgrade_candidates(deps, sym)
+        if not check_not_installed(deps, sym, python_cmd):
+            return
+
+        candidates = _get_upgrade_candidates(deps, sym, python_cmd)
         if not candidates:
             return
 
-        upgraded = _confirm_and_upgrade(candidates, sym)
+        upgraded = _confirm_and_upgrade(candidates, sym, python_cmd)
         if not upgraded:
             return
 
-        _repin_dependencies(file_path, deps, toml_data, candidates, sym)
+        _repin_dependencies(file_path, deps, toml_data, candidates, sym, python_cmd)
     except CommandError as e:
         print(f"{sym.ERR} {e}")
     except KeyboardInterrupt:
