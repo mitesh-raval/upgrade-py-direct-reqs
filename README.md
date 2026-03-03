@@ -24,7 +24,14 @@ Developed by Miteshkumar N Raval with guidance and scripting assistance from cod
 # Recommended: install inside your existing project virtual environment
 source myenv/bin/activate  # or myenv\Scripts\activate on Windows
 pip install upgrade-py-direct-reqs
+
+# Optional: install the CLI globally with pipx
+pipx install upgrade-py-direct-reqs
 ```
+
+> **Important:** Even when installed via `pipx`, activate your project's virtual
+> environment before running `upgrade-py-direct-reqs` so upgrades are applied to
+> the correct environment.
 
 ---
 
