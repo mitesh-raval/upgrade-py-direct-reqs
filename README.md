@@ -10,9 +10,9 @@ Developed by Miteshkumar N Raval with guidance and scripting assistance from cod
 ## Features
 
 - Lists outdated direct dependencies.
-- Prompts for confirmation before upgrading.
+- `plan` command provides deterministic, zero-mutation upgrade planning.
 - Supports both `requirements.txt` and `pyproject.toml` (with `[project.dependencies]`).
-- Updates `requirements.txt` with new pinned versions.
+- `upgrade` command applies upgrades with optional package selection.
 - Cross-platform: works on Linux, macOS, and Windows.
 - CLI installable via pip in a virtual environment or globally.
 
@@ -38,16 +38,25 @@ pipx install upgrade-py-direct-reqs
 ## Usage
 
 ```bash
-# Explicitly specify your requirements file
-upgrade-py-direct-reqs requirements.txt
+# Plan updates (default command, no file mutation)
+upgrade-py-direct-reqs plan requirements.txt
 
-# Or specify your pyproject.toml
-upgrade-py-direct-reqs pyproject.toml
+# Plan with machine-readable output for CI/agents
+upgrade-py-direct-reqs plan requirements.txt --json --diff
+
+# Upgrade specific packages only
+upgrade-py-direct-reqs upgrade requirements.txt requests fastapi --yes
+
+# Allow major bumps explicitly
+upgrade-py-direct-reqs upgrade pyproject.toml --allow-major --yes
+
+# Show updr version
+upgrade-py-direct-reqs --version
 ```
 
-- The CLI lists outdated direct dependencies.
-- Review versions and confirm before upgrading.
-- After upgrade, the `requirements.txt` file is updated with pinned versions.
+- `plan` is safe by default and never mutates files.
+- `upgrade` performs installation and rewrites direct dependency entries.
+- Package names are normalized for matching (`requests`, `Requests`, `requests>=...`).
 
 ---
 
@@ -91,21 +100,19 @@ flask==3.0.3
 
 ---
 
-## Test instructions 
+## Test instructions
 
 ### To run CLI tests with pytest:
-``` 
- 1. pip install .[dev]  (to install dev deps listed in pyproject.toml)
- 2. Ensure pytest is installed in your environment: pip install pytest
- 3. Run tests from the project root:
-       pytest tests/test_cli.py
- 4. Tests cover:
-       - requirements.txt only
-       - pyproject.toml only
-       - conflicting dependencies in both files
-       - empty requirements.txt
-       - invalid toml file name (refer PEP 621 for more details)
+```bash
+pip install .[dev]
+pytest tests/test_cli.py
 ```
+
+Current automated coverage in `tests/test_cli.py` includes:
+- invalid TOML filename validation (`pyproject.toml` naming rule)
+- normalized package-name matching behavior in plan mode
+- upgrade path behavior when dependencies are not installed
+- plan `--json` behavior in missing-installation guard paths
 
 ## License
 
