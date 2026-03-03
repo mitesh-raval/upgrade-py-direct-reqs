@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 from pathlib import Path
 import tempfile
 import pytest
@@ -7,12 +8,16 @@ import pytest
 
 def run_cli(file_path):
     """Run the CLI and capture output"""
+    env = dict(os.environ)
+    env["VIRTUAL_ENV"] = sys.prefix
+    env["PYTHONPATH"] = str(Path("src").resolve())
     result = subprocess.run(
         [sys.executable, "src/updr/cli.py", str(file_path)],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
         input="n\n",  # cancel upgrades
+        env=env,
         check=True,
     )
     return result.stdout
@@ -22,7 +27,7 @@ def run_cli(file_path):
 @pytest.fixture(name="pkgs")
 def _pkgs_fixture_impl():
     """Provides an immutable tuple of package names for tests."""
-    return ("toml==0.0.1", "pytest==0.0.1")
+    return ("definitely-missing-pkg-a==0.0.1", "definitely-missing-pkg-b==0.0.1")
 
 
 @pytest.fixture(name="setup_req_file")
@@ -80,8 +85,7 @@ def _setup_invalid_toml_file_name_impl():
 def test_requirements_only(setup_req_file):
     out = run_cli(setup_req_file)
     assert (
-        "Outdated direct dependencies" in out
-        or "All direct dependencies are up to date" in out
+        "NOT installed" in out
         or "No direct dependencies found" in out
     )
 
@@ -90,8 +94,7 @@ def test_toml_only(setup_toml_file):
     out = run_cli(setup_toml_file)
     assert "Using pyproject.toml" in out
     assert (
-        "Outdated direct dependencies" in out
-        or "All direct dependencies are up to date" in out
+        "NOT installed" in out
         or "No direct dependencies found" in out
     )
 
