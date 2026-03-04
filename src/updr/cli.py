@@ -300,25 +300,90 @@ def _prepare_file(file_path: Path, sym: Symbols) -> Tuple[Optional[Dict[str, Dep
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Plan or upgrade direct dependencies")
-    parser.add_argument("command", nargs="?", choices=["plan", "upgrade"], default="plan")
-    parser.add_argument("file", help="Path to requirements.txt or pyproject.toml")
-    parser.add_argument("packages", nargs="*", help="Optional package filter for plan/upgrade")
-    parser.add_argument("--python", dest="python_path", help="Python executable path")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON output")
-    parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompt for upgrades")
-    parser.add_argument("--allow-major", action="store_true", help="Allow major version bumps")
-    parser.add_argument("--tighten", action="store_true", help="Rewrite upgraded specs to exact pins")
-    parser.add_argument("--widen", action="store_true", help="Widen upper-bound operators when upgrading")
-    parser.add_argument("--diff", action="store_true", help="Print unified diff of planned file changes")
-    parser.add_argument("--no-color", action="store_true", help="Disable emojis")
-    parser.add_argument("-v", "--version", action="version", version=f"updr {get_updr_version()}")
+    parser = argparse.ArgumentParser(
+        prog="upgrade-py-direct-reqs",
+        description="Plan or upgrade direct dependencies from requirements.txt or pyproject.toml.",
+        epilog=(
+            "Examples:\n"
+            "  upgrade-py-direct-reqs plan requirements.txt\n"
+            "  upgrade-py-direct-reqs upgrade requirements.txt requests --yes\n"
+            "  upgrade-py-direct-reqs plan pyproject.toml --json --diff"
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "command",
+        nargs="?",
+        choices=["plan", "upgrade"],
+        default="plan",
+        metavar="{plan,upgrade}",
+        help="Action to run (default: plan)",
+    )
+    parser.add_argument(
+        "file",
+        nargs="?",
+        metavar="FILE",
+        help="Dependency file path (requirements.txt or pyproject.toml)",
+    )
+    parser.add_argument(
+        "packages",
+        nargs="*",
+        metavar="PACKAGE",
+        help="Optional package names to limit plan/upgrade scope",
+    )
+    parser.add_argument(
+        "--python",
+        dest="python_path",
+        metavar="PYTHON_PATH",
+        help="Python executable to use (default: active virtualenv python)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output (recommended for CI/AI agents)",
+    )
+    parser.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Skip interactive confirmation prompt during upgrade",
+    )
+    parser.add_argument(
+        "--allow-major",
+        action="store_true",
+        help="Allow major version bumps (otherwise blocked with exit code 2)",
+    )
+    parser.add_argument(
+        "--tighten",
+        action="store_true",
+        help="Rewrite upgraded constraints as exact pins (==)",
+    )
+    parser.add_argument(
+        "--widen",
+        action="store_true",
+        help="Widen '<'/'<=' upper-bound constraints to latest available version",
+    )
+    parser.add_argument(
+        "--diff",
+        action="store_true",
+        help="Print unified diff preview of planned dependency-file changes",
+    )
+    parser.add_argument("--no-color", action="store_true", help="Disable emoji/status symbols")
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"upgrade-py-direct-reqs {get_updr_version()}",
+    )
     return parser
 
 
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
+    if not args.file:
+        parser.error("the following arguments are required: file")
 
     sym = Symbols(args.no_color or args.json)
     python_cmd = get_python_cmd(sym, args.python_path)

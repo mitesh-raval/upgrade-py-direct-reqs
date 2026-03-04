@@ -50,13 +50,31 @@ upgrade-py-direct-reqs upgrade requirements.txt requests fastapi --yes
 # Allow major bumps explicitly
 upgrade-py-direct-reqs upgrade pyproject.toml --allow-major --yes
 
-# Show updr version
+# Show tool version
 upgrade-py-direct-reqs --version
 ```
 
 - `plan` is safe by default and never mutates files.
 - `upgrade` performs installation and rewrites direct dependency entries.
 - Package names are normalized for matching (`requests`, `Requests`, `requests>=...`).
+
+### CI / AI-agent friendly usage
+
+For automation and AI agents, prefer structured output and explicit discovery:
+
+```bash
+# Discover supported commands/options
+upgrade-py-direct-reqs --help
+
+# Get machine-readable plan payload
+upgrade-py-direct-reqs plan requirements.txt --json --diff
+```
+
+Suggested agent workflow:
+1. Run `--help` once to discover options.
+2. Run `plan ... --json --diff` and parse `candidates`, `major_blocked`, and `diff`.
+3. Apply policy checks (for example, block major upgrades unless explicitly allowed).
+4. Run `upgrade ... --yes` only when policy passes.
 
 ---
 
