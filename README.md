@@ -50,7 +50,7 @@ upgrade-py-direct-reqs upgrade requirements.txt requests fastapi --yes
 # Allow major bumps explicitly
 upgrade-py-direct-reqs upgrade pyproject.toml --allow-major --yes
 
-# Show updr version
+# Show tool version
 upgrade-py-direct-reqs --version
 ```
 

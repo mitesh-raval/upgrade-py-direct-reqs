@@ -56,4 +56,4 @@ def test_plan_json_when_missing_installations(tmp_path):
 def test_version_flag():
     result = run_cli(["--version"])
     assert result.returncode == 0
-    assert result.stdout.strip().startswith("updr ")
+    assert result.stdout.strip().startswith("upgrade-py-direct-reqs ")
