@@ -24,7 +24,8 @@ classifiers = [
 ]
 dependencies = [
   "pip>=21.0",
-  "toml>=0.10.2"
+  "toml>=0.10.2",
+  "packaging>=21.0"
 ]
 
 [project.optional-dependencies]
