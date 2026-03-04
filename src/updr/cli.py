@@ -300,9 +300,11 @@ def _prepare_file(file_path: Path, sym: Symbols) -> Tuple[Optional[Dict[str, Dep
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Plan or upgrade direct dependencies")
+    parser = argparse.ArgumentParser(
+        prog="upgrade-py-direct-reqs", description="Plan or upgrade direct dependencies"
+    )
     parser.add_argument("command", nargs="?", choices=["plan", "upgrade"], default="plan")
-    parser.add_argument("file", help="Path to requirements.txt or pyproject.toml")
+    parser.add_argument("file", nargs="?", help="Path to requirements.txt or pyproject.toml")
     parser.add_argument("packages", nargs="*", help="Optional package filter for plan/upgrade")
     parser.add_argument("--python", dest="python_path", help="Python executable path")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON output")
@@ -312,13 +314,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--widen", action="store_true", help="Widen upper-bound operators when upgrading")
     parser.add_argument("--diff", action="store_true", help="Print unified diff of planned file changes")
     parser.add_argument("--no-color", action="store_true", help="Disable emojis")
-    parser.add_argument("-v", "--version", action="version", version=f"updr {get_updr_version()}")
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"upgrade-py-direct-reqs {get_updr_version()}",
+    )
     return parser
 
 
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
+    if not args.file:
+        parser.error("the following arguments are required: file")
 
     sym = Symbols(args.no_color or args.json)
     python_cmd = get_python_cmd(sym, args.python_path)
