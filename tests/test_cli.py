@@ -57,3 +57,11 @@ def test_version_flag():
     result = run_cli(["--version"])
     assert result.returncode == 0
     assert result.stdout.strip().startswith("upgrade-py-direct-reqs ")
+
+
+def test_help_includes_readable_option_descriptions():
+    result = run_cli(["--help"])
+    assert result.returncode == 0
+    assert "Action to run (default: plan)" in result.stdout
+    assert "Emit machine-readable JSON output (recommended for CI/AI agents)" in result.stdout
+    assert "Examples:" in result.stdout
