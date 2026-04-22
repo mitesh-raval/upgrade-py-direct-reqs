@@ -380,7 +380,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     parser = build_parser()
-    args = parser.parse_args()
+    argv = sys.argv[1:]
+    if argv and not argv[0].startswith("-") and argv[0] not in {"plan", "upgrade"}:
+        argv = ["plan", *argv]
+    args = parser.parse_args(argv)
 
     if not args.file:
         parser.error("the following arguments are required: file")
@@ -398,6 +401,10 @@ def main() -> None:
     if not check_not_installed(deps, sym, python_cmd):
         sys.exit(4)
 
+    print(
+        "ℹ️  Checking outdated packages via pip. This can take a little while depending on network/index speed...",
+        file=sys.stderr,
+    )
     package_filter = {normalize_package_name(pkg) for pkg in args.packages} if args.packages else None
     candidates = _get_upgrade_candidates(deps, python_cmd, package_filter)
     major_blocked = [pkg for pkg, (cur, lat) in candidates.items() if _is_major_bump(cur, lat)]

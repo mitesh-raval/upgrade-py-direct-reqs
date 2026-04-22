@@ -65,3 +65,11 @@ def test_help_includes_readable_option_descriptions():
     assert "Action to run (default: plan)" in result.stdout
     assert "Emit machine-readable JSON output (recommended for CI/AI agents)" in result.stdout
     assert "Examples:" in result.stdout
+
+
+def test_file_without_command_defaults_to_plan(tmp_path):
+    req = tmp_path / "requirements.txt"
+    req.write_text("Definitely-Missing-Pkg==0.0.1\n", encoding="utf-8")
+    result = run_cli([str(req), "--json"])
+    assert result.returncode == 4
+    assert "NOT installed" in result.stdout
