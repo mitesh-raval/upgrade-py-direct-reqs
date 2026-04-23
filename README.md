@@ -123,6 +123,9 @@ upgrade-py-direct-reqs [plan|upgrade] FILE [packages ...] [flags]
 # Default plan mode (command omitted)
 upgrade-py-direct-reqs requirements.txt
 
+# Flags can precede the file and still default to plan
+upgrade-py-direct-reqs --json requirements.txt
+
 # Explicit plan mode
 upgrade-py-direct-reqs plan requirements.txt
 

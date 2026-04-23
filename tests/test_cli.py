@@ -74,3 +74,19 @@ def test_file_without_command_defaults_to_plan(tmp_path):
     result = run_cli([str(req), "--json"])
     assert result.returncode == 4
     assert "NOT installed" in result.stdout
+
+
+def test_flag_before_file_defaults_to_plan(tmp_path):
+    req = tmp_path / "requirements.txt"
+    req.write_text("Definitely-Missing-Pkg==0.0.1\n", encoding="utf-8")
+    result = run_cli(["--json", str(req)])
+    assert result.returncode == 4
+    assert "NOT installed" in result.stdout
+
+
+def test_python_flag_before_file_defaults_to_plan(tmp_path):
+    req = tmp_path / "requirements.txt"
+    req.write_text("Definitely-Missing-Pkg==0.0.1\n", encoding="utf-8")
+    result = run_cli(["--python", sys.executable, "--json", str(req)])
+    assert result.returncode == 4
+    assert "NOT installed" in result.stdout

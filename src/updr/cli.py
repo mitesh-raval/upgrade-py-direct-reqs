@@ -381,8 +381,34 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     argv = sys.argv[1:]
-    if argv and not argv[0].startswith("-") and argv[0] not in {"plan", "upgrade"}:
-        argv = ["plan", *argv]
+
+    # If the first positional token is a file path (instead of an explicit command),
+    # default to "plan" even when flags come first, e.g.:
+    #   upgrade-py-direct-reqs --json requirements.txt
+    option_actions = parser._option_string_actions  # pylint: disable=protected-access
+    first_positional_index: Optional[int] = None
+    i = 0
+    while i < len(argv):
+        token = argv[i]
+        if token == "--":
+            if i + 1 < len(argv):
+                first_positional_index = i + 1
+            break
+
+        if token.startswith("-"):
+            action = option_actions.get(token)
+            if action is not None and getattr(action, "nargs", None) in (None, 1):
+                # Options like --python consume the next token as their value.
+                i += 2
+                continue
+            i += 1
+            continue
+
+        first_positional_index = i
+        break
+
+    if first_positional_index is not None and argv[first_positional_index] not in {"plan", "upgrade"}:
+        argv = [*argv[:first_positional_index], "plan", *argv[first_positional_index:]]
     args = parser.parse_args(argv)
 
     if not args.file:
