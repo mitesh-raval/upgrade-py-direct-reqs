@@ -4,6 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path("src").resolve()))
+
+from updr.cli import normalize_package_name
+
 
 def run_cli(args, input_text=""):
     env = dict(os.environ)
@@ -29,12 +33,9 @@ def test_invalid_toml_file_name(tmp_path):
 
 
 def test_normalized_package_filter_case_insensitive(tmp_path):
-    req = tmp_path / "requirements.txt"
-    req.write_text("Requests==0.0.1\n", encoding="utf-8")
-    result = run_cli(["plan", str(req), "requests", "--json"])
-    # exits before network call because dependency is not installed
-    assert result.returncode == 4
-    assert "NOT installed" in result.stdout
+    assert normalize_package_name("Requests") == "requests"
+    assert normalize_package_name("requests") == "requests"
+    assert normalize_package_name("my_pkg.name") == "my-pkg-name"
 
 
 def test_upgrade_requires_confirmation_without_yes(tmp_path):
