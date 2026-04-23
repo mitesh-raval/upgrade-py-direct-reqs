@@ -220,7 +220,7 @@ def _build_plan(
     return {pkg: _planned_line(deps[pkg], latest, tighten, widen) for pkg, (_, latest) in candidates.items()}
 
 
-def _render_diff(file_path: Path, deps: Dict[str, DepSpec], plan_lines: Dict[str, str]) -> str:
+def _render_diff(file_path: Path, plan_lines: Dict[str, str]) -> str:
     before = file_path.read_text(encoding="utf-8").splitlines(keepends=True)
     if file_path.name.lower() == "pyproject.toml":
         new_data = toml.loads(file_path.read_text(encoding="utf-8"))
@@ -262,7 +262,7 @@ def _apply_upgrade(python_cmd: str, candidates: Dict[str, Tuple[str, str]]) -> N
             os.remove(upgrade_file)
 
 
-def _write_updates(file_path: Path, deps: Dict[str, DepSpec], toml_data: Optional[dict], plan_lines: Dict[str, str]) -> None:
+def _write_updates(file_path: Path, toml_data: Optional[dict], plan_lines: Dict[str, str]) -> None:
     if file_path.name.lower() == "pyproject.toml":
         assert toml_data is not None
         toml_data["project"]["dependencies"] = [
@@ -297,6 +297,35 @@ def _prepare_file(file_path: Path, sym: Symbols) -> Tuple[Optional[Dict[str, Dep
         print(f"{sym.ERR} No direct dependencies found to process.")
         return None, None
     return deps, toml_data
+
+
+def _inject_default_command(argv: List[str], parser: argparse.ArgumentParser) -> List[str]:
+    """Inject default 'plan' when first positional token is not a command."""
+    # pylint: disable=protected-access
+    option_actions = parser._option_string_actions
+    first_positional_index: Optional[int] = None
+    index = 0
+    while index < len(argv):
+        token = argv[index]
+        if token == "--":
+            if index + 1 < len(argv):
+                first_positional_index = index + 1
+            break
+
+        if token.startswith("-"):
+            action = option_actions.get(token)
+            if action is not None and getattr(action, "nargs", None) in (None, 1):
+                index += 2
+                continue
+            index += 1
+            continue
+
+        first_positional_index = index
+        break
+
+    if first_positional_index is None or argv[first_positional_index] in {"plan", "upgrade"}:
+        return argv
+    return [*argv[:first_positional_index], "plan", *argv[first_positional_index:]]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -380,35 +409,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     parser = build_parser()
-    argv = sys.argv[1:]
-
-    # If the first positional token is a file path (instead of an explicit command),
-    # default to "plan" even when flags come first, e.g.:
-    #   upgrade-py-direct-reqs --json requirements.txt
-    option_actions = parser._option_string_actions  # pylint: disable=protected-access
-    first_positional_index: Optional[int] = None
-    i = 0
-    while i < len(argv):
-        token = argv[i]
-        if token == "--":
-            if i + 1 < len(argv):
-                first_positional_index = i + 1
-            break
-
-        if token.startswith("-"):
-            action = option_actions.get(token)
-            if action is not None and getattr(action, "nargs", None) in (None, 1):
-                # Options like --python consume the next token as their value.
-                i += 2
-                continue
-            i += 1
-            continue
-
-        first_positional_index = i
-        break
-
-    if first_positional_index is not None and argv[first_positional_index] not in {"plan", "upgrade"}:
-        argv = [*argv[:first_positional_index], "plan", *argv[first_positional_index:]]
+    argv = _inject_default_command(sys.argv[1:], parser)
     args = parser.parse_args(argv)
 
     if not args.file:
@@ -436,7 +437,7 @@ def main() -> None:
     major_blocked = [pkg for pkg, (cur, lat) in candidates.items() if _is_major_bump(cur, lat)]
 
     plan_lines = _build_plan(deps, candidates, args.tighten, args.widen)
-    diff = _render_diff(file_path, deps, plan_lines) if args.diff else ""
+    diff = _render_diff(file_path, plan_lines) if args.diff else ""
 
     payload = {
         "command": args.command,
@@ -483,7 +484,7 @@ def main() -> None:
 
     try:
         _apply_upgrade(python_cmd, candidates)
-        _write_updates(file_path, deps, toml_data, plan_lines)
+        _write_updates(file_path, toml_data, plan_lines)
     except CommandError as exc:
         print(f"{sym.ERR} {exc}")
         sys.exit(5)
