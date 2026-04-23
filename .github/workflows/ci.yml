@@ -33,3 +33,6 @@ jobs:
 
       - name: Run tests
         run: pytest tests/test_cli.py
+
+      - name: Run pylint
+        run: pylint src/updr
