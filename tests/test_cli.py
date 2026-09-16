@@ -3,10 +3,12 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path("src").resolve()))
 
-from updr.cli import normalize_package_name
+from updr.cli import DepSpec, check_not_installed, normalize_package_name
+from updr.symbols import Symbols
 
 
 def run_cli(args, input_text=""):
@@ -36,6 +38,28 @@ def test_normalized_package_filter_case_insensitive(tmp_path):
     assert normalize_package_name("Requests") == "requests"
     assert normalize_package_name("requests") == "requests"
     assert normalize_package_name("my_pkg.name") == "my-pkg-name"
+
+
+def test_installed_dependency_validation_uses_one_pip_list_call(monkeypatch):
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((cmd, kwargs))
+        return SimpleNamespace(stdout='[{"name": "Requests"}]')
+
+    monkeypatch.setattr("updr.cli.subprocess.run", fake_run)
+    deps = {
+        "requests": DepSpec("Requests", "requests", None, None),
+        "flask": DepSpec("Flask", "flask", None, None),
+    }
+
+    assert not check_not_installed(deps, Symbols(no_color=True), "python")
+    assert calls == [
+        (
+            ["python", "-m", "pip", "list", "--format=json"],
+            {"capture_output": True, "text": True, "check": True},
+        )
+    ]
 
 
 def test_upgrade_requires_confirmation_without_yes(tmp_path):
