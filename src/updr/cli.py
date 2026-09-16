@@ -133,8 +133,12 @@ def check_not_installed(deps: Dict[str, DepSpec], sym: Symbols, python_cmd: str)
         [python_cmd, "-m", "pip", "list", "--format=json"],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        print(f"{sym.ERR} Unable to list installed packages using pip.")
+        return False
+
     installed = {normalize_package_name(pkg["name"]) for pkg in json.loads(result.stdout)}
     missing = [pkg for pkg in deps if pkg not in installed]
 
