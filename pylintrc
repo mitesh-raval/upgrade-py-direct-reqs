@@ -1,6 +1,6 @@
 [MAIN]
 
-init-hook=try: import pylint_venv; pylint_venv.inithook(force_venv_activation=True) except ImportError: pass
+init-hook=exec("try:\n    import pylint_venv\n    pylint_venv.inithook(force_venv_activation=True)\nexcept ImportError:\n    pass")
 
 # Analyse import fallback blocks. This can be used to support both Python 2 and
 # 3 compatible code, which means that the block might have code that exists
