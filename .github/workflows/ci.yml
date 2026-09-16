@@ -31,8 +31,13 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --no-build-isolation .[dev]
 
+      - name: Setup Pylint Problem Matcher
+        # Creates inline warnings directly inside the GitHub PR Files tab
+        run: echo "::add-matcher::.github/workflows/pylint-matcher.json"
+
       - name: Run tests
         run: pytest tests/test_cli.py
 
       - name: Run pylint
-        run: pylint src/updr
+        # Target explicitly avoids scanning external matrix virtual environment files
+        run: python -m pylint src/updr tests
