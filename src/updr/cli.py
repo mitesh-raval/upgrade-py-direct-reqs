@@ -129,13 +129,18 @@ def load_requirements(req_path: Path) -> Dict[str, DepSpec]:
 
 def check_not_installed(deps: Dict[str, DepSpec], sym: Symbols, python_cmd: str) -> bool:
     """Warn if declared direct dependencies are not installed."""
-    missing = []
-    for pkg in deps:
-        result = subprocess.run(
-            [python_cmd, "-m", "pip", "show", pkg], capture_output=True, text=True, check=False
-        )
-        if result.returncode != 0:
-            missing.append(pkg)
+    result = subprocess.run(
+        [python_cmd, "-m", "pip", "list", "--format=json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        print(f"{sym.ERR} Unable to list installed packages using pip.")
+        return False
+
+    installed = {normalize_package_name(pkg["name"]) for pkg in json.loads(result.stdout)}
+    missing = [pkg for pkg in deps if pkg not in installed]
 
     if missing:
         print(f"{sym.WARN} The following direct dependencies are NOT installed:")
@@ -425,6 +430,7 @@ def main() -> None:
     if not deps:
         sys.exit(3)
 
+    print(f"{sym.INFO} Validating declared direct dependencies...", file=sys.stderr)
     if not check_not_installed(deps, sym, python_cmd):
         sys.exit(4)
 
