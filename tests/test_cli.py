@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 import sys
@@ -34,7 +33,7 @@ def test_invalid_toml_file_name(tmp_path):
     assert "Invalid toml file name" in result.stdout
 
 
-def test_normalized_package_filter_case_insensitive(tmp_path):
+def test_normalized_package_filter_case_insensitive():
     assert normalize_package_name("Requests") == "requests"
     assert normalize_package_name("requests") == "requests"
     assert normalize_package_name("my_pkg.name") == "my-pkg-name"
@@ -88,7 +87,10 @@ def test_help_includes_readable_option_descriptions():
     result = run_cli(["--help"])
     assert result.returncode == 0
     assert "Action to run (default: plan)" in result.stdout
-    assert "Emit machine-readable JSON output (recommended for CI/AI agents)" in result.stdout
+    assert (
+        "Emit machine-readable JSON output (recommended for CI/AI agents)"
+        in result.stdout
+    )
     assert "Examples:" in result.stdout
 
 
