@@ -44,7 +44,7 @@ def test_installed_dependency_validation_uses_one_pip_list_call(monkeypatch):
 
     def fake_run(cmd, **kwargs):
         calls.append((cmd, kwargs))
-        return SimpleNamespace(stdout='[{"name": "Requests"}]')
+        return SimpleNamespace(returncode=0, stdout='[{"name": "Requests"}]')
 
     monkeypatch.setattr("updr.cli.subprocess.run", fake_run)
     deps = {
@@ -56,9 +56,23 @@ def test_installed_dependency_validation_uses_one_pip_list_call(monkeypatch):
     assert calls == [
         (
             ["python", "-m", "pip", "list", "--format=json"],
-            {"capture_output": True, "text": True, "check": True},
+            {"capture_output": True, "text": True, "check": False},
         )
     ]
+
+
+def test_installed_dependency_validation_handles_pip_list_failure(monkeypatch, capsys):
+    monkeypatch.setattr(
+        "updr.cli.subprocess.run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=1, stdout=""),
+    )
+
+    assert not check_not_installed(
+        {"requests": DepSpec("Requests", "requests", None, None)},
+        Symbols(no_color=True),
+        "python",
+    )
+    assert "Unable to list installed packages using pip." in capsys.readouterr().out
 
 
 def test_upgrade_requires_confirmation_without_yes(tmp_path):
